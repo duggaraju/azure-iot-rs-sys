@@ -1,4 +1,4 @@
-# azure_iot_rs
+# azure-iot-rs-sys
 Rust bindings for azure_iot_sdk_c
 
 

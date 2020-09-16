@@ -1,9 +1,14 @@
 [package]
-name = "azure_iot_rs"
+name = "azure-iot-rs-sys"
+description = "Rust bindings for Azure IOT C SDK"
 version = "0.1.0"
-authors = ["duggaraju@gmail.com"]
+authors = ["Prakash <duggaraju@gmail.com>"]
 edition = "2018"
 build = "build.rs"
+repository = "https://github.com/duggaraju/azure_iot_rs"
+license = "MIT"
+keywords = [ "azure", "iot", "edge", "device" , "SDK" ]
+categories = ["external-ffi-bindings"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
