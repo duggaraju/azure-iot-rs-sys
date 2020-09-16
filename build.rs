@@ -2,8 +2,22 @@ extern crate bindgen;
 
 use std::env;
 use std::path::PathBuf;
+use cmake;
 
 fn main() {
+
+
+    // Builds the azure iot sdk, installing it
+    // into $OUT_DIR
+    use cmake::Config;
+
+    let dst = Config::new("azure-iot-sdk-c")
+                     .define("use_edge_modules", "ON")
+                     .build();
+    println!("cargo:rustc-link-search=native={}", dst.display());
+    
+    println!("cargo:rustc-link-search=native={}", dst.display());
+
     // Tell cargo to tell rustc to link the azureiot libraries.
     println!("cargo:rustc-link-lib=iothub_client_mqtt_transport");
     println!("cargo:rustc-link-lib=iothub_client");
@@ -29,7 +43,7 @@ fn main() {
         // bindings for.
         .header("wrapper.h")
         // additional clang arguments.
-        .clang_arg("-I/usr/local/include/azureiot")
+        .clang_arg(format!("-I{}/include/azureiot", dst.display()))
         .clang_arg("-DUSE_EDGE_MODULES")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
