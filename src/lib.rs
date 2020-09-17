@@ -3,10 +3,13 @@ extern crate log as logger;
 
 mod iothub;
 
+
 #[cfg(test)]
 mod tests {
+
+    use super::iothub::*;
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn initialize_client() {
+        let mut client = IotHubModuleClient::new(move |event: IotHubModuleEvent| { info!("Received event!"); });
     }
 }
