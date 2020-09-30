@@ -14,10 +14,8 @@ fn main() {
     let dst = Config::new("azure-iot-sdk-c")
                      .define("use_edge_modules", "ON")
                      .build();
-    println!("cargo:rustc-link-search=native={}", dst.display());
+    println!("cargo:rustc-link-search=native={}/lib", dst.display());
     
-    println!("cargo:rustc-link-search=native={}", dst.display());
-
     // Tell cargo to tell rustc to link the azureiot libraries.
     println!("cargo:rustc-link-lib=iothub_client_mqtt_transport");
     println!("cargo:rustc-link-lib=iothub_client");
