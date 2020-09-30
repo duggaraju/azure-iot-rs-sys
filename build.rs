@@ -43,6 +43,7 @@ fn main() {
         // bindings for.
         .header("wrapper.h")
         // additional clang arguments.
+        .clang_arg(format!("-I{}/include", dst.display()))
         .clang_arg(format!("-I{}/include/azureiot", dst.display()))
         .clang_arg("-DUSE_EDGE_MODULES")
         // Tell cargo to invalidate the built crate whenever any of the
