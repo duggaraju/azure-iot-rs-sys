@@ -1,4 +1,5 @@
 extern crate bindgen;
+extern crate pkg_config;
 
 use std::env;
 use std::path::PathBuf;
@@ -6,6 +7,10 @@ use cmake;
 
 fn main() {
 
+    // check for dependencies
+    pkg_config::probe_library("uuid").unwrap();
+    pkg_config::probe_library("openssl").unwrap();
+    pkg_config::probe_library("libcurl").unwrap();
 
     // Builds the azure iot sdk, installing it
     // into $OUT_DIR

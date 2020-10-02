@@ -1,15 +1,15 @@
-#[macro_use]
-extern crate log as logger;
+#![allow(dead_code)]
+#![allow(non_upper_case_globals)]
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
 
-pub mod iothub;
-
+include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 #[cfg(test)]
 mod tests {
 
-    use super::iothub::*;
     #[test]
-    fn initialize_client() {
-        let _client = IotHubModuleClient::new(move |_event| { info!("Received event!"); });
+    fn test() {
+        unsafe { super::IoTHub_Init(); }
     }
 }
