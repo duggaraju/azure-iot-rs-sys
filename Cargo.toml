@@ -1,9 +1,9 @@
 [package]
 name = "azure-iot-rs-sys"
 description = "Rust bindings for Azure IOT C SDK"
-version = "0.1.7"
+version = "0.1.8"
 authors = ["Prakash <duggaraju@gmail.com>"]
-edition = "2018"
+edition = "2021"
 build = "build.rs"
 repository = "https://github.com/duggaraju/azure-iothub-rs-sys"
 license = "MIT"
@@ -12,14 +12,15 @@ categories = ["external-ffi-bindings"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
-default = [ "amqp", "mqtt", "http"]
+default = [ "amqp", "mqtt", "http", "prov_client" ]
 http = []
 mqtt = []
 amqp = []
+prov_client = []
 
 [dependencies]
 
 [build-dependencies]
-bindgen="0.55.1"
+bindgen="0.65.1"
 cmake = "0.1.44"
 pkg-config = "0.3.18"

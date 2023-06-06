@@ -36,8 +36,6 @@ fn main() {
     pkg_config::probe_library("openssl").unwrap();
     pkg_config::probe_library("libcurl").unwrap();
 
-    update_submodules(&["azure-iot-sdk-c"], ".");
-
     let mut config = Config::new("azure-iot-sdk-c");
     config
     .define("use_edge_modules", "ON")
@@ -75,7 +73,18 @@ fn main() {
         config.define("use_http", "OFF");
     }
 
-    update_submodules(&modules, "azure-iot-sdk-c");
+    if env::var_os("CARGO_FEATURE_PROV_CLIENT").is_some() {
+        config.define("use_prov_client", "ON");
+        modules.push("provisioning_client/deps/utpm/");
+        println!("cargo:rustc-link-lib=utpm");
+    } else {
+        config.define("use_prov_client", "OFF");
+    }
+
+    if env::var_os("UPDATE_SUBMODULES").is_some() {
+        update_submodules(&["azure-iot-sdk-c/"], ".");
+        update_submodules(&modules, "azure-iot-sdk-c");    
+    }
 
     // Builds the azure iot sdk, installing it
     // into $OUT_DIR
