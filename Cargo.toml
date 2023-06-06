@@ -11,6 +11,11 @@ keywords = [ "azure", "IoT",  "edge", "device" , "SDK" ]
 categories = ["external-ffi-bindings"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = [ "amqp", "mqtt", "http"]
+http = []
+mqtt = []
+amqp = []
 
 [dependencies]
 
