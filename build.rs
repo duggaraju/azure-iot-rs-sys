@@ -31,17 +31,19 @@ fn update_submodules(modules: &[&str], dir: &str) {
 
 fn main() {
 
-    // check for dependencies
-    pkg_config::probe_library("uuid").unwrap();
-    pkg_config::probe_library("openssl").unwrap();
-    pkg_config::probe_library("libcurl").unwrap();
-
     let mut config = Config::new("azure-iot-sdk-c");
     config
     .define("use_edge_modules", "ON")
     .define("skip_samples", "ON")
     .define("CMAKE_C_FLAGS", "-Wno-array-parameter -Wno-deprecated-declarations -Wno-discarded-qualifiers");
 
+    // Builds the azure iot sdk, installing it
+    // into $OUT_DIR
+    use cmake::Config;
+
+    let dst = config.build();
+    println!("cargo:rustc-link-search=native={}/lib", dst.display());
+    
     let mut modules = vec![
         "c-utility",
         "deps/umock-c",
@@ -49,9 +51,13 @@ fn main() {
         "deps/azure-macro-utils-c"
     ];
 
+    // Tell cargo to tell rustc to link the azureiot libraries.
+    println!("cargo:rustc-link-lib=iothub_client");
+
     if env::var_os("CARGO_FEATURE_AMQP").is_some() {
         modules.push("uamqp/");
         config.define("use_amqp", "ON");
+        println!("cargo:rustc-link-lib=uamqp");
     } else {
         config.define("use_amqp", "OFF");
     }
@@ -59,10 +65,20 @@ fn main() {
     if env::var_os("CARGO_FEATURE_MQTT").is_some() {
         modules.push("umqtt");
         config.define("use_mqtt", "ON");
-        println!("cargo:rustc-link-lib=umqtt");
         println!("cargo:rustc-link-lib=iothub_client_mqtt_transport");
+        println!("cargo:rustc-link-lib=umqtt");
     } else {
         config.define("use_mqtt", "OFF");
+    }
+
+    if env::var_os("CARGO_FEATURE_PROV_CLIENT").is_some() {
+        config.define("use_prov_client", "ON");
+        modules.push("provisioning_client/deps/utpm/");
+        println!("cargo:rustc-link-lib=prov_auth_client");
+        println!("cargo:rustc-link-lib=hsm_security_client");
+        println!("cargo:rustc-link-lib=utpm");    
+    } else {
+        config.define("use_prov_client", "OFF");
     }
 
     if env::var_os("CARGO_FEATURE_HTTP").is_some() {
@@ -73,36 +89,24 @@ fn main() {
         config.define("use_http", "OFF");
     }
 
-    if env::var_os("CARGO_FEATURE_PROV_CLIENT").is_some() {
-        config.define("use_prov_client", "ON");
-        modules.push("provisioning_client/deps/utpm/");
-        println!("cargo:rustc-link-lib=utpm");
-    } else {
-        config.define("use_prov_client", "OFF");
-    }
-
     if env::var_os("UPDATE_SUBMODULES").is_some() {
         update_submodules(&["azure-iot-sdk-c/"], ".");
         update_submodules(&modules, "azure-iot-sdk-c");    
     }
 
-    // Builds the azure iot sdk, installing it
-    // into $OUT_DIR
-    use cmake::Config;
-
-    let dst = config.build();
-    println!("cargo:rustc-link-search=native={}/lib", dst.display());
-    
-    // Tell cargo to tell rustc to link the azureiot libraries.
-    println!("cargo:rustc-link-lib=iothub_client");
+    // Tell cargo to tell rustc to link common azureiot libraries.
     println!("cargo:rustc-link-lib=parson");
-    println!("cargo:rustc-link-lib=prov_auth_client");
-    println!("cargo:rustc-link-lib=hsm_security_client");
     println!("cargo:rustc-link-lib=aziotsharedutil");
-    println!("cargo:rustc-link-lib=curl");
-    println!("cargo:rustc-link-lib=ssl");
-    println!("cargo:rustc-link-lib=crypto");
-    println!("cargo:rustc-link-lib=uuid");
+
+    // check for dependencies
+    pkg_config::probe_library("uuid").unwrap();
+    pkg_config::probe_library("openssl").unwrap();
+    pkg_config::probe_library("libcurl").unwrap();
+    pkg_config::probe_library("uuid").unwrap();
+
+    println!("cargo:rustc-link-lib=pthread");
+    println!("cargo:rustc-link-lib=m");
+    println!("cargo:rustc-link-lib=rt");
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!("cargo:rerun-if-changed=wrapper.h");
@@ -120,7 +124,7 @@ fn main() {
         .clang_arg("-DUSE_EDGE_MODULES")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.
